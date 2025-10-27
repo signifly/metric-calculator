@@ -1,21 +1,44 @@
-'use client'
+"use client";
 
-import { useRouter } from 'next/navigation'
-import { useStore } from '@/store'
-import { useShopifyMetrics } from '@/hooks/use-shopify-metrics'
-import { MetricsCard } from '@/components/dashboard/metrics-card'
-import { Button } from '@/components/ui/button'
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
-import { RefreshCcw } from 'lucide-react'
+import { useRouter } from "next/navigation";
+import { useStore } from "@/store";
+import { useShopifyMetrics } from "@/hooks/use-shopify-metrics";
+import { MetricsCard } from "@/components/dashboard/metrics-card";
+import { Button } from "@/components/ui/button";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { DateRangePicker } from "@/components/ui/date-range-picker";
+import { RefreshCcw } from "lucide-react";
+import { useCallback, useEffect } from "react";
 
 export default function DashboardPage() {
-  const router = useRouter()
-  const { currentStore, metrics, isLoading, error } = useStore()
+  const router = useRouter();
+  const { currentStore, metrics, isLoading, error, setDateRange, dateRange } =
+    useStore();
+
+  // Initialize date range on first mount only
+  useEffect(() => {
+    if (!dateRange) {
+      const end = new Date();
+      const start = new Date();
+      start.setDate(start.getDate() - 30);
+      setDateRange({ startDate: start, endDate: end });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // Only run on mount
+
+  // Memoize the callback to prevent recreating it
+  const handleDateRangeChange = useCallback(
+    (range: { startDate: Date; endDate: Date }) => {
+      setDateRange(range);
+    },
+    [setDateRange]
+  );
 
   // Fetch metrics on mount
-  useShopifyMetrics()
+  useShopifyMetrics();
 
-  if (isLoading) {
+  // Only show loading if we don't have metrics yet and we're loading
+  if (isLoading && !metrics) {
     return (
       <div className="flex min-h-screen items-center justify-center">
         <div className="text-center">
@@ -23,7 +46,7 @@ export default function DashboardPage() {
           <p className="text-gray-600">Loading Shopify metrics...</p>
         </div>
       </div>
-    )
+    );
   }
 
   if (error) {
@@ -35,11 +58,12 @@ export default function DashboardPage() {
             {error}
             <br />
             <br />
-            Make sure you have configured SHOPIFY_STORE_DOMAIN and SHOPIFY_ADMIN_API_TOKEN in your .env.local file.
+            Make sure you have configured SHOPIFY_STORE_DOMAIN and
+            SHOPIFY_ADMIN_API_TOKEN in your .env.local file.
           </AlertDescription>
         </Alert>
       </div>
-    )
+    );
   }
 
   if (!currentStore || !metrics) {
@@ -52,16 +76,24 @@ export default function DashboardPage() {
           </AlertDescription>
         </Alert>
       </div>
-    )
+    );
   }
 
   return (
     <div className="container mx-auto p-6">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold mb-2">{currentStore.name} Dashboard</h1>
-        <p className="text-gray-600">
-          View your store metrics and run simulations
-        </p>
+      <div className="mb-8 flex justify-between items-start md:flex-row flex-col gap-4">
+        <div>
+          <h1 className="text-3xl font-bold mb-2">
+            {currentStore.name} Dashboard
+          </h1>
+          <p className="text-gray-600">
+            View your store metrics and run simulations
+          </p>
+        </div>
+        <DateRangePicker
+          onDateRangeChange={handleDateRangeChange}
+          currentDateRange={dateRange || undefined}
+        />
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
@@ -96,11 +128,13 @@ export default function DashboardPage() {
       </div>
 
       <div className="flex gap-4">
-        <Button onClick={() => router.push('/simulator')}>Run Simulation</Button>
-        <Button variant="outline" onClick={() => router.push('/compare')}>
+        <Button onClick={() => router.push("/simulator")}>
+          Run Simulation
+        </Button>
+        <Button variant="outline" onClick={() => router.push("/compare")}>
           Compare Scenarios
         </Button>
       </div>
     </div>
-  )
+  );
 }

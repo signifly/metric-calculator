@@ -1,29 +1,31 @@
-'use client'
+"use client";
 
-import { useState } from 'react'
-import { Slider } from '@/components/ui/slider'
-import { Label } from '@/components/ui/label'
-import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Input } from '@/components/ui/input'
-import { CalculationEngine } from '@/lib/calculations/engine'
-import { useStore } from '@/store'
-import { Adjustments, Metrics } from '@/types'
-import { toast } from 'sonner'
+import { useState } from "react";
+import { Slider } from "@/components/ui/slider";
+import { Label } from "@/components/ui/label";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { CalculationEngine } from "@/lib/calculations/engine";
+import { useStore } from "@/store";
+import { Adjustments, Metrics } from "@/types";
+import { toast } from "sonner";
 
 export function SimulationPanel() {
-  const { metrics, addScenario } = useStore()
-  const [scenarioName, setScenarioName] = useState('')
+  const { metrics, addScenario, dateRange } = useStore();
+  const [scenarioName, setScenarioName] = useState("");
   const [adjustments, setAdjustments] = useState<Adjustments>({
     cvrChange: 0,
     aovChange: 0,
     retentionChange: 0,
     trafficChange: 0,
-    cacChange: 0
-  })
+    cacChange: 0,
+  });
 
   if (!metrics) {
-    return <div>No metrics available. Please connect to a Shopify store first.</div>
+    return (
+      <div>No metrics available. Please connect to a Shopify store first.</div>
+    );
   }
 
   // Convert LiveMetrics to Metrics format for calculation engine
@@ -32,25 +34,26 @@ export function SimulationPanel() {
     averageOrderValue: metrics.orders.averageValue,
     retentionRate: metrics.customers.retentionRate,
     traffic: 10000, // Default traffic value - could be fetched from analytics
-    customerAcquisitionCost: 50 // Default CAC - could be made configurable
-  }
+    customerAcquisitionCost: 50, // Default CAC - could be made configurable
+  };
 
-  const engine = new CalculationEngine(calculationMetrics)
-  const results = engine.calculateImpact(adjustments)
+  const engine = new CalculationEngine(calculationMetrics);
+  const results = engine.calculateImpact(adjustments);
 
   const handleSave = () => {
-    const name = scenarioName || `Scenario ${new Date().toLocaleString()}`
+    const name = scenarioName || `Scenario ${new Date().toLocaleString()}`;
     const scenario = {
       id: Date.now().toString(),
       name,
       adjustments,
       results,
-      createdAt: new Date()
-    }
-    addScenario(scenario)
-    toast.success(`Scenario "${name}" saved successfully!`)
-    setScenarioName('')
-  }
+      createdAt: new Date(),
+      dateRange: dateRange || { startDate: new Date(), endDate: new Date() },
+    };
+    addScenario(scenario);
+    toast.success(`Scenario "${name}" saved successfully!`);
+    setScenarioName("");
+  };
 
   return (
     <div className="space-y-6">
@@ -78,7 +81,8 @@ export function SimulationPanel() {
                 />
                 <p className="text-xs text-gray-500">
                   Current: {calculationMetrics.conversionRate.toFixed(2)}% →
-                  Projected: {results.projected.metrics.conversionRate.toFixed(2)}%
+                  Projected:{" "}
+                  {results.projected.metrics.conversionRate.toFixed(2)}%
                 </p>
               </div>
 
@@ -99,14 +103,17 @@ export function SimulationPanel() {
                 />
                 <p className="text-xs text-gray-500">
                   Current: ${calculationMetrics.averageOrderValue.toFixed(2)} →
-                  Projected: ${results.projected.metrics.averageOrderValue.toFixed(2)}
+                  Projected: $
+                  {results.projected.metrics.averageOrderValue.toFixed(2)}
                 </p>
               </div>
 
               <div>
                 <Label className="flex justify-between mb-2">
                   <span>Customer Retention Change</span>
-                  <span className="font-bold">{adjustments.retentionChange}%</span>
+                  <span className="font-bold">
+                    {adjustments.retentionChange}%
+                  </span>
                 </Label>
                 <Slider
                   value={[adjustments.retentionChange]}
@@ -120,14 +127,17 @@ export function SimulationPanel() {
                 />
                 <p className="text-xs text-gray-500">
                   Current: {calculationMetrics.retentionRate.toFixed(2)}% →
-                  Projected: {results.projected.metrics.retentionRate.toFixed(2)}%
+                  Projected:{" "}
+                  {results.projected.metrics.retentionRate.toFixed(2)}%
                 </p>
               </div>
 
               <div>
                 <Label className="flex justify-between mb-2">
                   <span>Traffic Change</span>
-                  <span className="font-bold">{adjustments.trafficChange}%</span>
+                  <span className="font-bold">
+                    {adjustments.trafficChange}%
+                  </span>
                 </Label>
                 <Slider
                   value={[adjustments.trafficChange]}
@@ -141,7 +151,8 @@ export function SimulationPanel() {
                 />
                 <p className="text-xs text-gray-500">
                   Current: {calculationMetrics.traffic.toLocaleString()} →
-                  Projected: {results.projected.metrics.traffic.toLocaleString()}
+                  Projected:{" "}
+                  {results.projected.metrics.traffic.toLocaleString()}
                 </p>
               </div>
             </CardContent>
@@ -158,16 +169,18 @@ export function SimulationPanel() {
                 <div>
                   <p className="text-sm text-gray-500">Current Revenue</p>
                   <p className="text-2xl font-bold">
-                    ${results.current.revenue.toLocaleString('en-US', {
-                      maximumFractionDigits: 0
+                    $
+                    {results.current.revenue.toLocaleString("en-US", {
+                      maximumFractionDigits: 0,
                     })}
                   </p>
                 </div>
                 <div>
                   <p className="text-sm text-gray-500">Projected Revenue</p>
                   <p className="text-2xl font-bold text-blue-600">
-                    ${results.projected.revenue.toLocaleString('en-US', {
-                      maximumFractionDigits: 0
+                    $
+                    {results.projected.revenue.toLocaleString("en-US", {
+                      maximumFractionDigits: 0,
                     })}
                   </p>
                 </div>
@@ -176,23 +189,24 @@ export function SimulationPanel() {
               <div className="border-t pt-4">
                 <p className="text-sm text-gray-500 mb-2">Revenue Increase</p>
                 <p className="text-3xl font-bold text-green-600">
-                  ${results.impact.revenueIncrease.toLocaleString('en-US', {
-                    maximumFractionDigits: 0
+                  $
+                  {results.impact.revenueIncrease.toLocaleString("en-US", {
+                    maximumFractionDigits: 0,
                   })}
                 </p>
                 <p className="text-sm text-gray-500 mt-1">
                   {results.impact.percentageIncrease.toFixed(2)}% increase
                 </p>
               </div>
-
-              <div className="border-t pt-4">
+              {/* NOT USED FOR NOW /*}
+              {/* <div className="border-t pt-4">
                 <p className="text-sm text-gray-500 mb-2">Break-even Period</p>
                 <p className="text-xl font-bold">
                   {results.impact.breakEvenMonths === Infinity
-                    ? 'N/A'
+                    ? "N/A"
                     : `${results.impact.breakEvenMonths} months`}
                 </p>
-              </div>
+              </div> */}
             </CardContent>
           </Card>
 
@@ -218,5 +232,5 @@ export function SimulationPanel() {
         </div>
       </div>
     </div>
-  )
+  );
 }

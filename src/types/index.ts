@@ -1,61 +1,62 @@
 export interface Metrics {
-  conversionRate: number
-  averageOrderValue: number
-  retentionRate: number
-  traffic: number
-  customerAcquisitionCost: number
+  conversionRate: number;
+  averageOrderValue: number;
+  retentionRate: number;
+  traffic: number;
+  customerAcquisitionCost: number;
 }
 
 export interface Adjustments {
-  cvrChange: number // percentage
-  aovChange: number // percentage
-  retentionChange: number // percentage
-  trafficChange: number // percentage
-  cacChange: number // absolute
+  cvrChange: number; // percentage
+  aovChange: number; // percentage
+  retentionChange: number; // percentage
+  trafficChange: number; // percentage
+  cacChange: number; // absolute
 }
 
 export interface CalculationResults {
   current: {
-    revenue: number
-    metrics: Metrics
-  }
+    revenue: number;
+    metrics: Metrics;
+  };
   projected: {
-    revenue: number
-    metrics: Metrics
-  }
+    revenue: number;
+    metrics: Metrics;
+  };
   impact: {
-    revenueIncrease: number
-    percentageIncrease: number
-    breakEvenMonths: number
-  }
+    revenueIncrease: number;
+    percentageIncrease: number;
+    breakEvenMonths: number;
+  };
 }
 
 export interface Scenario {
-  id: string
-  name: string
-  adjustments: Adjustments
-  results: CalculationResults
-  createdAt: Date
+  id: string;
+  name: string;
+  adjustments: Adjustments;
+  results: CalculationResults;
+  createdAt: Date;
+  dateRange?: { startDate: Date; endDate: Date };
 }
 
 export interface ShopifyStore {
-  domain: string
-  name: string
-  token: string
+  domain: string;
+  name: string;
+  token: string;
 }
 
 export interface LiveMetrics {
   orders: {
-    count: number
-    totalRevenue: number
-    averageValue: number
-  }
+    count: number;
+    totalRevenue: number;
+    averageValue: number;
+  };
   customers: {
-    total: number
-    returning: number
-    new: number
-    retentionRate: number
-  }
-  conversionRate: number
-  lastUpdated: Date
+    total: number;
+    returning: number;
+    new: number;
+    retentionRate: number;
+  };
+  conversionRate: number;
+  lastUpdated: Date;
 }
